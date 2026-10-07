@@ -93,10 +93,10 @@ while IFS= read -r line; do
         continue
     fi
 
-    timestamp=$(date +%s)
+    timestamp=$(/bin/date +%s)
 
     printf '%s,gpu_index=%s,gpu_uuid=%s,gpu_name=%s %s %d\n' "$MEASUREMENT" \
-        "$idx" "$(esc_tag "$uuid")" "$(esc_tag "$name")" "$fields" "${timestamp}"
+        "$idx" "$(esc_tag "$uuid")" "$(esc_tag "$name")" "$fields" "${timestamp}000000000"
     emitted=$((emitted + 1))
 done <<< "$out"
 
