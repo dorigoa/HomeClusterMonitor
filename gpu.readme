@@ -1,0 +1,15 @@
+To monitor Intel GPU:
+
+sudo add-apt-repository ppa:kobuk-team/intel-graphics
+sudo apt update
+sudo apt install xpu-smi
+xpu-smi --version
+
+sudo usermod -aG render,video telegraf
+
+Add the following in the systemd service script:
+
+[Service]
+AmbientCapabilities=CAP_PERFMON
+
+Restart Telegraf service
