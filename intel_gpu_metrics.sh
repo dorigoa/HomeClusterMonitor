@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 #
 # intel_gpu_metrics.sh — metriche GPU Intel Arc (Pro B70 e altre Arc Pro) in InfluxDB
-# line protocol, per Telegraf. Gemello di nvidia_gpu_metrics.sh: stessi field, così le
-# query/i pannelli Grafana si riusano cambiando solo il measurement.
+# line protocol, per Telegraf. Gemello di nvidia_gpu_metrics.sh: stessi field di base, così
+# le query/i pannelli Grafana si riusano cambiando solo il measurement; in più potenza,
+# temperature, frequenza e ventola.
 #
 # Output: una riga per GPU, es.
-#   intel_gpu,gpu_index=0,gpu_uuid=...,gpu_name=Intel(R)\ Arc(TM)\ Pro\ B70\ Graphics utilization_gpu_pct=37.5,memory_free_mib=30123.4,memory_used_mib=2644.6,memory_total_mib=32768
+#   intel_gpu,gpu_index=0,gpu_uuid=...,gpu_name=Intel(R)\ Arc(TM)\ Pro\ B70\ Graphics utilization_gpu_pct=37.5,memory_free_mib=30123.4,memory_used_mib=2644.6,memory_total_mib=32768,power_draw_w=140.2,temperature_gpu_c=65,temperature_memory_c=70,clock_graphics_mhz=2400,fan_speed_pct=55
 #
 # Requisiti sulla macchina con le schede:
 #  - xpu-smi >= 2.0 (Intel XPU Manager; la 1.x non ha --query-gpu né supporta le B70).
@@ -54,12 +55,13 @@ METRICS=(
     "memory.free=memory_free_mib"
     "memory.used=memory_used_mib"
     "memory.total=memory_total_mib"
-    # campi extra disponibili sulle Arc Pro, da attivare se servono:
-    # "power.draw=power_draw_w"                    # potenza della scheda (W)
-    # "temperature.gpu=temperature_gpu_c"          # temperatura del core (°C)
-    # "temperature.memory=temperature_memory_c"    # temperatura della VRAM (°C)
-    # "clocks.current.graphics=clock_graphics_mhz" # frequenza attuale (MHz)
-    # "fan.speed=fan_speed_pct"                    # ventola (%)
+    # campi solo Intel (lo script NVIDIA non li ha); se la scheda non ne fornisce
+    # uno, xpu-smi stampa N/A e quel field manca dalla riga:
+    "power.draw=power_draw_w"                    # potenza di tutta la scheda (dominio card, W)
+    "temperature.gpu=temperature_gpu_c"          # temperatura del core (°C)
+    "temperature.memory=temperature_memory_c"    # temperatura della VRAM (°C)
+    "clocks.current.graphics=clock_graphics_mhz" # frequenza attuale (MHz)
+    "fan.speed=fan_speed_pct"                    # ventola, % del massimo (xpu-smi non dà gli RPM)
 )
 
 prog=${0##*/}
